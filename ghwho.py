@@ -14,7 +14,7 @@ mefile = home + '/.ghuser.json'
 class User:
   def __init__(self):
     if (os.path.isfile(gitconfig) == False):
-      exit("{0} does not exist.".format(gitconfig))
+      exit("{0} does not exist. Please create one and try again.".format(gitconfig))
 
     # Read .gitconfig data.
     options = parse_config(gitconfig)
