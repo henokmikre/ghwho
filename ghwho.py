@@ -8,59 +8,126 @@ from os.path import expanduser
 import pycurl
 
 home = expanduser("~")
+gitconfig = home + '/.gitconfig'
 mefile = home + '/.ghuser.json'
 
-def getData(name):
-  """Gets GitHub data.
-  @see http://stackoverflow.com/a/23718539/871793.
-  """
-  # Check if user json file exists.
+class User:
+  def __init__(self):
+    if (os.path.isfile(gitconfig) == False):
+      exit("{0} does not exist.".format(gitconfig))
 
-  if os.path.isfile(mefile):
-    printData()
-  else:
-    c = pycurl.Curl()
-    c.setopt(c.URL, 'https://api.github.com/users/' + name)
-    with open(mefile, 'w') as f:
-      c.setopt(c.WRITEFUNCTION, f.write)
-      c.perform()
+    # Read .gitconfig data.
+    options = parse_config(gitconfig)
+
+    # Just for kicks, get the GitHub user data and save it to 'mefile' path.
+    userdata = self.getUser()
+
+    self.name = options['name']
+    self.email = options['email']
+    self.first = options['name'].split()[0]
+    self.last = options['name'].split()[1]
+    self.user = options['user']
+    self.company = userdata['company']
+
+  def getUser(self):
+    """Reads GitHub user data from local file, if it exists. Else, it fetches.
+    """
+    # If file does not exist, create it.
+    if (os.path.isfile(mefile) == False):
+      print "{0} does not exist. Creating one.".format(mefile)
+      getData(self)
+
+    # Instantiate dictionary.
+    udata = {}
+
+    with open(mefile) as obj:
+      data = json.load(obj)
+
+    udata['company'] = data['company']
+
+    # The following is extra data for demo purposes.
+    udata['username'] = data['login']
+    udata['fullname'] = data['name']
+    udata['firstname'] = udata['fullname'].split()[0]
+    udata['lastname'] = udata['fullname'].split()[1]
+    udata['company'] = data['company']
+    udata['website'] = data['blog']
+    udata['domain'] = data['blog'].split('//')[1]
+    # This is a hacky method of getting email address. Gitconfig is better.
+    email = udata['firstname'].lower() + '@' + udata['domain']
+
+    return udata
+
+  def getData(self):
+    """Gets GitHub data.
+    @see http://stackoverflow.com/a/23718539/871793.
+    """
+    # Check if user json file exists.
+
+    if os.path.isfile(mefile):
+      printData()
+    else:
+      c = pycurl.Curl()
+      c.setopt(c.URL, 'https://api.github.com/users/' + self.user)
+      with open(mefile, 'w') as f:
+        c.setopt(c.WRITEFUNCTION, f.write)
+        c.perform()
+
+def parse_config(filename):
+  """Parses config file.
+  @see http://www.decalage.info/python/configparser.
+  """
+  COMMENT_CHAR = '#'
+  OPTION_CHAR =  '='
+
+  options = {}
+  f = open(filename)
+  for line in f:
+    # First, remove comments:
+    if COMMENT_CHAR in line:
+      # split on comment char, keep only the part before
+      line, comment = line.split(COMMENT_CHAR, 1)
+    # Second, find lines with an option=value:
+    if OPTION_CHAR in line:
+      # split on option char:
+      option, value = line.split(OPTION_CHAR, 1)
+      # strip spaces:
+      option = option.strip()
+      value = value.strip()
+      # store in dictionary:
+      options[option] = value
+  f.close()
+  return options
 
 def printData(uvar = None):
   """Prints data from local file.
   """
-  if (os.path.isfile(mefile) == False):
-    exit("{0} does not exist.".format(mefile))
 
-  with open(mefile) as obj:
-    data = json.load(obj)
-
-  username = data['login']
-  fullname = data['name']
-  firstname = fullname.split()[0]
-  lastname = fullname.split()[1]
-  company = data['company']
-  website_domain = data['blog'].split('//')[1]
-  email = firstname.lower() + '@' + website_domain
+  # Instantiate user object.
+  u = User()
 
   # Print user property.
   if uvar:
-    if uvar == 'first':
-      print firstname
-    elif uvar == 'last':
-      print lastname
+    if uvar == "name":
+      print u.name
     elif uvar == 'email':
-      print email
-    elif uvar == "full":
-      print fullname
+      print u.email
+    if uvar == 'first':
+      print u.first
+    elif uvar == 'last':
+      print u.last
+    elif uvar == 'company':
+      print u.company
   else:
     usage()
 
 def usage():
   print "Usage: %s -u username -p [user-property]\n" % sys.argv[0]
+  print "\t name      Print full name"
+  print "\t email     Print email address"
   print "\t first     Print first name"
   print "\t last      Print last name"
-  print "\t email     Print email address"
-  print "\t full      Print full name"
+  print "\t company   Print company name"
   print "\n"
 
 def main(argv):
