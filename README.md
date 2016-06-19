@@ -38,6 +38,6 @@ ghwho -u henokmikre -p first
 Replace the string `{fullname}` with the user's full name:
 
 ```
-sed "s/{fullname}/$(ghwho.py -p fullname)/g" test.txt
+sed "s/{fullname}/$(ghwho -p fullname)/g" test.txt
 ```
 
