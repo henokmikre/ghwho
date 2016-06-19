@@ -19,23 +19,25 @@ class User:
     # Read .gitconfig data.
     options = parse_config(gitconfig)
 
-    # Just for kicks, get the GitHub user data and save it to 'mefile' path.
-    userdata = self.getUser()
-
     self.name = options['name']
     self.email = options['email']
     self.first = options['name'].split()[0]
     self.last = options['name'].split()[1]
     self.user = options['user']
+
+    # Just for kicks, get the GitHub user data and save it to 'mefile' path.
+    userdata = self.getUser()
+
     self.company = userdata['company']
 
   def getUser(self):
-    """Reads GitHub user data from local file, if it exists. Else, it fetches.
+    """Reads GitHub user data from local file, if it exists.
+    If file does not exists, it creates one by calling GitHub API.
     """
     # If file does not exist, create it.
     if (os.path.isfile(mefile) == False):
       print "{0} does not exist. Creating one.".format(mefile)
-      getData(self)
+      self.getData()
 
     # Instantiate dictionary.
     udata = {}
@@ -63,7 +65,6 @@ class User:
     @see http://stackoverflow.com/a/23718539/871793.
     """
     # Check if user json file exists.
-
     if os.path.isfile(mefile):
       printData()
     else:
