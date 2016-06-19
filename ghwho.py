@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-from getopt import getopt
+from getopt import getopt, GetoptError
 import os
 import json
 from os.path import expanduser
@@ -50,15 +50,18 @@ def printData(uvar = None):
       print lastname
     elif uvar == 'email':
       print email
-    elif uvar == 'fullname':
+    elif uvar == "full":
       print fullname
   else:
-    print "First Name: {0}".format(firstname)
-    print "Last Name: {0}".format(lastname)
-    print "Full Name: {0}".format(fullname)
-    print "Company: {0}".format(company)
-    print "Email: {0}".format(email)
-    print "Username: {0}".format(username)
+    usage()
+
+def usage():
+  print "Usage: %s -u username -p [user-property]\n" % sys.argv[0]
+  print "\t first     Print first name"
+  print "\t last      Print last name"
+  print "\t email     Print email address"
+  print "\t full      Print full name"
+  print "\n"
 
 def main(argv):
   """Main program.
@@ -74,22 +77,27 @@ def main(argv):
     argv = sys.argv
 
   if len(argv) > 0:
-    myopts, args = getopt(sys.argv[1:],"u:p:")
+    try:
+      myopts, args = getopt(argv,"u:p:")
 
-    for o, a in myopts:
-      if o == '-u':
-        username = a
-      elif o == '-p':
-        uvar = a
-      else:
-        print "Usage: %s -u username -p user-property" % argv[0]
+      for o, a in myopts:
+        if o == '-u':
+          username = a
+        elif o == '-p':
+          uvar = a
+        else:
+          usage()
 
-    if uvar:
       printData(uvar)
-    else:
-      getData(username)
+    except GetoptError as e:
+      print "Invalid option.\n"
+      usage()
+      exit(1)
+    except:
+      print "Unexpected error:", sys.exc_info()[0]
+      raise
   else:
-    printData()
+    usage()
 
   return 0
 
