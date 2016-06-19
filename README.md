@@ -2,13 +2,14 @@
 
 GitHub-based user information lookup.
 
-## Installation
-
-### Prerequisites
+## Prerequisites
 
 ```
 pip install pycurl
+pip install json
 ```
+
+## Installation
 
 ```
 curl -L http://github.com/henokmikre/ghwho/raw/master/ghwho.py > ghwho
@@ -28,7 +29,15 @@ mv ghwho /usr/local/share/ghwho
 
 ## Usage
 
+Print user's first name:
+
 ```
-ghwho henokmikre
+ghwho -u henokmikre -p first
+```
+
+Replace the string `{fullname}` with the user's full name:
+
+```
+sed "s/{fullname}/$(ghwho.py -p fullname)/g" test.txt
 ```
 
